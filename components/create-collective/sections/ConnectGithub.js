@@ -1,21 +1,23 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Flex, Box } from '@rebass/grid';
+import { URLSearchParams } from 'universal-url';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+
 import StyledButton from '../../StyledButton';
 import StyledCheckbox from '../../StyledCheckbox';
-import { P, H1, Span } from '../../Text';
-import GithubRepositories from '../../GithubRepositories';
+import { P, H1 } from '../../Text';
+import GithubRepositories from './GithubRepositories';
 import StyledInputField from '../../StyledInputField';
 import Loading from '../../Loading';
 import GithubRepositoriesFAQ from '../../faqs/GithubRepositoriesFAQ';
 import { withUser } from '../../UserProvider';
-import { URLSearchParams } from 'universal-url';
+
 import { Router } from '../../../server/pages';
 import { getGithubRepos } from '../../../lib/api';
 import { addCreateCollectiveFromGithubMutation } from '../../../lib/graphql/mutations';
 import { getWebsiteUrl, getErrorFromGraphqlException } from '../../../lib/utils';
 import { LOCAL_STORAGE_KEYS, getFromLocalStorage } from '../../../lib/local-storage';
-import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 
 class ConnectGithub extends React.Component {
   static propTypes = {
@@ -45,21 +47,14 @@ class ConnectGithub extends React.Component {
           ),
         },
       },
+      header: { id: 'createCollective.header.create', defaultMessage: 'Create a Collective' },
       openSourceSubtitle: {
         id: 'collective.subtitle.opensource',
         defaultMessage: 'Open source projects are invited to join the Open Source Collective fiscal host.',
       },
-      repoSubtitleP1: {
-        id: 'collective.subtitle.seeRepo',
-        defaultMessage: "Don't see the repository you're looking for? Get help.",
-      },
-      repoSubtitleP2: {
-        id: 'collective.subtitle.altVerification',
-        defaultMessage: 'Want to apply using alternative verification criteria? Click here.',
-      },
       repoHeader: {
         id: 'collective.header.pickarepo',
-        defaultMessage: 'Pick a repo',
+        defaultMessage: 'Pick a repository',
       },
       back: {
         id: 'createCollective.link.back',
@@ -114,6 +109,7 @@ class ConnectGithub extends React.Component {
   };
 
   async createCollectives(collectiveInputType) {
+    console.log(collectiveInputType);
     collectiveInputType.type = 'COLLECTIVE';
     try {
       const res = await this.props.createCollectiveFromGithub(collectiveInputType);
@@ -148,11 +144,11 @@ class ConnectGithub extends React.Component {
     const { repositories, creatingCollective, loadingRepos } = this.state;
 
     return (
-      <div className="openSourceApply">
-        {token && loadingRepos && (
+      <Flex className="openSourceApply" flexDirection="column" m={[3, 4]} mb={[4]}>
+        {token && (
           <Fragment>
-            <Flex flexDirection="column" p={4} mt={2}>
-              <Box textAlign="left" minHeight={['32px']}>
+            <Flex flexDirection="column" my={[2, 4]}>
+              <Box textAlign="left" minHeight={['32px']} marginLeft={['none', '224px']}>
                 <StyledButton
                   asLink
                   fontSize="Paragraph"
@@ -165,70 +161,89 @@ class ConnectGithub extends React.Component {
                   ←&nbsp;{intl.formatMessage(this.messages.back)}
                 </StyledButton>
               </Box>
-              <Box mb={3}>
-                <H1 fontSize={['H3', null, 'H1']} lineHeight={['H3', null, 'H1']} fontWeight="bold" textAlign="center">
-                  {intl.formatMessage(this.messages.repoHeader)}
-                </H1>
-              </Box>
-              <Box textAlign="center" minHeight={['24px']}>
-                <P>{intl.formatMessage(this.messages.repoSubtitleP1)}</P>
-                <P mb={2}>{intl.formatMessage(this.messages.repoSubtitleP2)}</P>
-              </Box>
-            </Flex>
-            <Loading />
-          </Fragment>
-        )}
-        {token && repositories.length !== 0 && (
-          <Fragment>
-            <Flex flexDirection="column" p={4} mt={2}>
-              <Box textAlign="left" minHeight={['32px']}>
-                <StyledButton
-                  asLink
-                  fontSize="Paragraph"
-                  color="black.600"
-                  onClick={() => {
-                    this.changeRoute({ verb: 'create', category: undefined });
-                    this.handleChange('category', null);
-                  }}
+              <Box mb={[2, 3]}>
+                <H1
+                  fontSize={['H5', 'H3']}
+                  lineHeight={['H5', 'H3']}
+                  fontWeight="bold"
+                  textAlign="center"
+                  color="black.900"
                 >
-                  ←&nbsp;{intl.formatMessage(this.messages.back)}
-                </StyledButton>
-              </Box>
-              <Box mb={3}>
-                <H1 fontSize={['H3', null, 'H1']} lineHeight={['H3', null, 'H1']} fontWeight="bold" textAlign="center">
                   {intl.formatMessage(this.messages.repoHeader)}
                 </H1>
               </Box>
               <Box textAlign="center" minHeight={['24px']}>
-                <P>{intl.formatMessage(this.messages.repoSubtitleP1)}</P>
-                <P mb={2}>{intl.formatMessage(this.messages.repoSubtitleP2)}</P>
+                <P fontSize="Paragraph" color="black.600" mb={2}>
+                  <FormattedMessage
+                    id="collective.subtitle.seeRepo"
+                    defaultMessage="Don't see the repository you're looking for? {helplink}."
+                    values={{
+                      helplink: (
+                        <a href="#" target="_blank" rel="noopener noreferrer">
+                          Get help
+                        </a>
+                      ),
+                    }}
+                  />
+                </P>
+                <P fontSize="Paragraph" color="black.600" mb={2}>
+                  <FormattedMessage
+                    id="collective.subtitle.altVerification"
+                    defaultMessage="Want to apply using alternative verification criteria? {altlink}."
+                    values={{
+                      altlink: (
+                        <a href="#" target="_blank" rel="noopener noreferrer">
+                          Click here
+                        </a>
+                      ),
+                    }}
+                  />{' '}
+                </P>
               </Box>
             </Flex>
-            <Flex justifyContent="center" width={1} mb={4}>
-              <Box width={[0, null, null, '24em']} />
-              <Box maxWidth={500} minWidth={400}>
-                <StyledInputField htmlFor="collective">
-                  {fieldProps => (
-                    <GithubRepositories
-                      {...fieldProps}
-                      repositories={repositories}
-                      creatingCollective={creatingCollective}
-                      onCreateCollective={data => {
-                        this.setState({ creatingCollective: true });
-                        this.createCollectives(data);
-                      }}
-                    />
-                  )}
-                </StyledInputField>
-              </Box>
-              <GithubRepositoriesFAQ mt={4} ml={4} display={['none', null, 'block']} width={1 / 5} minWidth="335px" />
-            </Flex>
+            {loadingRepos && <Loading />}
+            {repositories.length !== 0 && (
+              <Fragment>
+                <Flex justifyContent="center" width={1} mb={4} flexDirection={['column', 'row']}>
+                  <Box width={[0, null, null, '24em']} />
+                  <Box maxWidth={[300, 500]} minWidth={[200, 400]}>
+                    <StyledInputField htmlFor="collective">
+                      {fieldProps => <GithubRepositories {...fieldProps} repositories={repositories} />}
+                    </StyledInputField>
+                  </Box>
+                  <StyledButton
+                    display={['block', null, null, 'none']}
+                    textAlign="center"
+                    buttonSize="small"
+                    height="36px"
+                    maxWidth="97px"
+                    buttonStyle="primary"
+                    mx={2}
+                    px={[2, 3]}
+                  >
+                    <FormattedMessage id="createcollective.opensource.continue" defaultMessage="Continue" />
+                  </StyledButton>
+                  <GithubRepositoriesFAQ
+                    mt={4}
+                    ml={4}
+                    display={['block', null, 'block']}
+                    width={1 / 5}
+                    minWidth={[200, 335]}
+                  />
+                </Flex>
+                <Flex justifyContent="center">
+                  <StyledButton buttonSize="small" height="36px" maxWidth={[97, 157]} buttonStyle="primary">
+                    Continue
+                  </StyledButton>
+                </Flex>
+              </Fragment>
+            )}
           </Fragment>
         )}
         {!token && (
           <Fragment>
-            <Flex flexDirection="column" p={4} mt={2}>
-              <Box textAlign="left" minHeight={['32px']}>
+            <Flex flexDirection="column" my={[2, 4]}>
+              <Box textAlign="left" minHeight={['32px']} marginLeft={['none', '224px']}>
                 <StyledButton
                   asLink
                   fontSize="Paragraph"
@@ -241,46 +256,75 @@ class ConnectGithub extends React.Component {
                   ←&nbsp;{intl.formatMessage(this.messages.back)}
                 </StyledButton>
               </Box>
-              <Box mb={3}>
-                <H1 fontSize={['H3', null, 'H1']} lineHeight={['H3', null, 'H1']} fontWeight="bold" textAlign="center">
-                  <FormattedMessage id="home.create" defaultMessage="Create a Collective" />
+              <Box mb={[2, 3]}>
+                <H1
+                  fontSize={['H5', 'H3']}
+                  lineHeight={['H5', 'H3']}
+                  fontWeight="bold"
+                  textAlign="center"
+                  color="black.900"
+                >
+                  {intl.formatMessage(this.messages.header)}
                 </H1>
               </Box>
               <Box textAlign="center" minHeight={['24px']}>
-                <Span mb={2}>{intl.formatMessage(this.messages.openSourceSubtitle)}</Span>
+                <P fontSize="Paragraph" color="black.600" mb={2}>
+                  {intl.formatMessage(this.messages.openSourceSubtitle)}
+                </P>
               </Box>
             </Flex>
             <Flex alignItems="center" justifyContent="center">
-              <Box mt={2} mb={4} minWidth={['400px']} maxWidth={['600px']} border="none" minHeight={['350px']}>
-                <P mb={4}>
+              <Box mb={[1, 5]} minWidth={['300px', '576px']} maxWidth={['500px', '576px']} px={[1, 4]}>
+                <P fontSize="Caption" mb={3}>
                   <FormattedMessage
                     id="createcollective.opensource.p1"
                     defaultMessage="You're creating software. You don't want to worry about creating a legal entity or seperate bank account, paying taxes, or providing invoices to sponsors. Let us take care of all that, so you can stay focused on your project."
                   />
                 </P>
-                <P mb={4}>
+                <P fontSize="Caption" mb={3}>
                   <FormattedMessage
                     id="createcollective.opensource.p2"
-                    defaultMessage="We have created the {osclink}, a non-profit umbrella organization, to serve the open source community. To join, you need at least 100 stars on Github or meet our alternative acceptance criteria."
+                    defaultMessage="We have created the {osclink}, a non-profit umbrella organization, to serve the open source community. To join, you need at least 100 stars on Github or meet our {criterialink}."
                     values={{
-                      osclink: <a href="https://opencollective.com/opensource">Open Source Collective 501c6</a>,
+                      osclink: (
+                        <a href="https://opencollective.com/opensource" target="_blank" rel="noopener noreferrer">
+                          Open Source Collective 501c6
+                        </a>
+                      ),
+                      criterialink: (
+                        <a href="#" target="_blank" rel="noopener noreferrer">
+                          alternative acceptance criteria
+                        </a>
+                      ),
                     }}
                   />
                 </P>
-                <P mb={4}>
+                <P fontSize="Caption" mb={3}>
                   <FormattedMessage id="createcollective.opensource.p3" defaultMessage="Fees: 10% of funds raised." />
                 </P>
-                <P mb={4}>
+                <P fontSize="Caption" mb={3}>
                   <FormattedMessage
                     id="createcollective.opensource.p4"
-                    defaultMessage="Our fees cover operating costs like accounting, payments, tax reporting, invoices, legal liability, use of the Open Collcetive Platform, and providing support. We also run a range of initiatives for our mission of supporting a sustainable and healthy open source ecosystem. Learn more on our website. Join us!"
+                    defaultMessage="Our fees cover operating costs like accounting, payments, tax reporting, invoices, legal liability, use of the Open Collective Platform, and providing support. We also run a range of initiatives for our mission of supporting a sustainable and healthy open source ecosystem. Learn more on our website. Join us!"
                   />
                 </P>
 
                 <Box className="tos" mx={1} my={4}>
                   <StyledCheckbox
                     name="tos"
-                    label={intl.formatMessage(this.messages['tos.label'])}
+                    label={
+                      <FormattedMessage
+                        id="createcollective.opensourcetos.label"
+                        defaultMessage="I agree with the <toslink>terms of fiscal sponsorship</toslink>."
+                        values={{
+                          toslink: msg => (
+                            <a href="/tos" target="_blank" rel="noopener noreferrer">
+                              {msg}
+                            </a>
+                          ),
+                        }}
+                      />
+                    }
                     required
                     checked={this.state.checked}
                     onChange={({ checked }) => {
@@ -289,12 +333,15 @@ class ConnectGithub extends React.Component {
                     }}
                   />
                 </Box>
-                <Flex justifyContent="center">
+                <Flex justifyContent="center" alignItems="center" flexDirection={['column', 'row']}>
                   <StyledButton
                     mx={2}
-                    px={4}
+                    mb={[3, null, null, 'none']}
+                    px={[2, 3]}
                     textAlign="center"
-                    buttonSize="large"
+                    buttonSize="small"
+                    height="36px"
+                    maxWidth="196px"
                     buttonStyle="primary"
                     onClick={() => {
                       window.location.replace(this.getGithubConnectUrl());
@@ -309,14 +356,16 @@ class ConnectGithub extends React.Component {
                   </StyledButton>
                   <StyledButton
                     textAlign="center"
-                    buttonSize="large"
+                    buttonSize="small"
+                    height="36px"
+                    maxWidth="213px"
                     buttonStyle="secondary"
                     onClick={() => {
                       this.handleChange('category', 'opensourcemanual');
                       this.changeRoute({ verb: 'create', category: 'opensourcemanual' });
                     }}
                     mx={2}
-                    px={4}
+                    px={[2, 3]}
                   >
                     <FormattedMessage
                       id="createcollective.opensource.ManualVerification"
@@ -328,7 +377,7 @@ class ConnectGithub extends React.Component {
             </Flex>
           </Fragment>
         )}
-      </div>
+      </Flex>
     );
   }
 }
