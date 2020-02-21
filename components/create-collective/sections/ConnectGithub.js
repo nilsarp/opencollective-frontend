@@ -67,6 +67,7 @@ class ConnectGithub extends React.Component {
       repositories: [],
       creatingCollective: false,
       checked: false,
+      form: false,
     };
   }
 
@@ -141,7 +142,7 @@ class ConnectGithub extends React.Component {
 
   render() {
     const { token, intl } = this.props;
-    const { repositories, creatingCollective, loadingRepos } = this.state;
+    const { repositories, loadingRepos, form } = this.state;
 
     return (
       <Flex className="openSourceApply" flexDirection="column" m={[3, 4]} mb={[4]}>
@@ -202,27 +203,24 @@ class ConnectGithub extends React.Component {
               </Box>
             </Flex>
             {loadingRepos && <Loading />}
-            {repositories.length !== 0 && (
+            {repositories.length !== 0 && !form && (
               <Fragment>
                 <Flex justifyContent="center" width={1} mb={4} flexDirection={['column', 'row']}>
                   <Box width={[0, null, null, '24em']} />
                   <Box maxWidth={[300, 500]} minWidth={[200, 400]}>
                     <StyledInputField htmlFor="collective">
-                      {fieldProps => <GithubRepositories {...fieldProps} repositories={repositories} />}
+                      {fieldProps => (
+                        <GithubRepositories
+                          {...fieldProps}
+                          repositories={repositories}
+                          sendRepoInfo={info => {
+                            console.log(info);
+                            this.setState({ form: true });
+                          }}
+                        />
+                      )}
                     </StyledInputField>
                   </Box>
-                  <StyledButton
-                    display={['block', null, null, 'none']}
-                    textAlign="center"
-                    buttonSize="small"
-                    height="36px"
-                    maxWidth="97px"
-                    buttonStyle="primary"
-                    mx={2}
-                    px={[2, 3]}
-                  >
-                    <FormattedMessage id="createcollective.opensource.continue" defaultMessage="Continue" />
-                  </StyledButton>
                   <GithubRepositoriesFAQ
                     mt={4}
                     ml={4}
@@ -231,13 +229,9 @@ class ConnectGithub extends React.Component {
                     minWidth={[200, 335]}
                   />
                 </Flex>
-                <Flex justifyContent="center">
-                  <StyledButton buttonSize="small" height="36px" maxWidth={[97, 157]} buttonStyle="primary">
-                    Continue
-                  </StyledButton>
-                </Flex>
               </Fragment>
             )}
+            {form && <Fragment>the form will load next here with the repo info</Fragment>}
           </Fragment>
         )}
         {!token && (

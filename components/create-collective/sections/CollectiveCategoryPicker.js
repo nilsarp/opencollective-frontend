@@ -1,12 +1,14 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Flex, Box } from '@rebass/grid';
-import { H1 } from '../../Text';
-import themeGet from '@styled-system/theme-get';
-import StyledButton from '../../StyledButton';
-import Container from '../../Container';
 import styled from 'styled-components';
 import { defineMessages, injectIntl } from 'react-intl';
+import themeGet from '@styled-system/theme-get';
+
+import { H1 } from '../../Text';
+import StyledButton from '../../StyledButton';
+import Container from '../../Container';
+
 import { Router } from '../../../server/pages';
 
 class CollectiveCategoryPicker extends React.Component {

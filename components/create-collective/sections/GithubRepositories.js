@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import themeGet from '@styled-system/theme-get';
+import { Flex, Box } from '@rebass/grid';
 import { Search } from '@styled-icons/octicons/Search';
-import { injectIntl, defineMessages } from 'react-intl';
+import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 
 import { H4 } from '../../Text';
 import Container from '../../Container';
 import StyledCard from '../../StyledCard';
 import StyledRadioList from '../../StyledRadioList';
 import StyledInput from '../../StyledInput';
+import StyledButton from '../../StyledButton';
 import GithubRepositoryEntry from './GithubRepositoryEntry';
 
 import { escapeInput } from '../../../lib/utils';
@@ -32,85 +34,106 @@ const messages = defineMessages({
 /**
  * Component for displaying list of public repositories
  */
-const GithubRepositories = ({ repositories, intl, ...fieldProps }) => {
-  const [state, setState] = useState({ search: '', type: 'repository' });
+const GithubRepositories = ({ repositories, sendRepoInfo, intl, ...fieldProps }) => {
+  const [state, setState] = useState({ search: '', disabled: true, repoInfo: { type: 'repository' } });
 
   if (state.search) {
     const test = new RegExp(escapeInput(state.search), 'i');
     repositories = repositories.filter(repository => repository.name.match(test));
   }
 
-  console.log('new state?', state);
-
   const showSearch = true; // repositories.length >= 5;
   return (
-    <StyledCard maxWidth={[300, 500]} minWidth={[200, 464]}>
-      {showSearch && (
-        <Container
-          display="flex"
-          borderBottom="1px solid"
-          borderColor="black.200"
-          px={[2, 4]}
-          py={1}
-          alignItems="center"
+    <Fragment>
+      <StyledCard maxWidth={[300, 500]} minWidth={[200, 464]}>
+        {showSearch && (
+          <Container
+            display="flex"
+            borderBottom="1px solid"
+            borderColor="black.200"
+            px={[2, 4]}
+            py={1}
+            alignItems="center"
+          >
+            <SearchIcon size="16" />
+            <StyledInput
+              bare
+              type="text"
+              fontSize="Paragraph"
+              lineHeight="Paragraph"
+              placeholder={intl.formatMessage(messages.filterByName)}
+              onChange={({ target }) => {
+                setState(state => ({
+                  ...state,
+                  search: target.value,
+                }));
+              }}
+              ml={2}
+            />
+          </Container>
+        )}
+
+        {repositories.length === 0 && (
+          <Container my={3}>
+            <H4 textAlign="center" fontSize="1.4rem" color="black.400">
+              No repository match
+            </H4>
+          </Container>
+        )}
+
+        <StyledRadioList {...fieldProps} options={repositories} keyGetter="name">
+          {({ value, radio, checked }) => {
+            return (
+              <RepositoryEntryContainer px={[2, 4]} py={3}>
+                <GithubRepositoryEntry
+                  radio={radio}
+                  value={value}
+                  checked={checked}
+                  changeRepoInfo={(type, value) => {
+                    if (type === 'repository') {
+                      setState(state => ({
+                        ...state,
+                        disabled: false,
+                        repoInfo: {
+                          type,
+                          handle: `${value.owner.login}/${value.name}`,
+                          repo: null,
+                        },
+                      }));
+                    } else {
+                      setState(state => ({
+                        ...state,
+                        disabled: false,
+                        repoInfo: {
+                          type,
+                          handle: `${value.owner.login}`,
+                          repo: `${value.owner.login}/${value.name}`,
+                        },
+                      }));
+                    }
+                  }}
+                />
+              </RepositoryEntryContainer>
+            );
+          }}
+        </StyledRadioList>
+      </StyledCard>
+      <Flex justifyContent="center">
+        <StyledButton
+          textAlign="center"
+          buttonSize="small"
+          height="36px"
+          maxWidth="97px"
+          buttonStyle="primary"
+          disabled={state.disabled}
+          onClick={() => sendRepoInfo(state.repoInfo)}
+          m={2}
+          px={[2, 3]}
         >
-          <SearchIcon size="16" />
-          <StyledInput
-            bare
-            type="text"
-            fontSize="Paragraph"
-            lineHeight="Paragraph"
-            placeholder={intl.formatMessage(messages.filterByName)}
-            onChange={({ target }) => {
-              setState(state => ({
-                ...state,
-                search: target.value,
-              }));
-            }}
-            ml={2}
-          />
-        </Container>
-      )}
-
-      {repositories.length === 0 && (
-        <Container my={3}>
-          <H4 textAlign="center" fontSize="1.4rem" color="black.400">
-            No repository match
-          </H4>
-        </Container>
-      )}
-
-      <StyledRadioList {...fieldProps} options={repositories} keyGetter="name">
-        {({ value, radio, checked }) => {
-          return (
-            <RepositoryEntryContainer px={[2, 4]} py={3}>
-              <GithubRepositoryEntry
-                radio={radio}
-                value={value}
-                checked={checked}
-                changeRepoInfo={(type, value) => {
-                  if (type === 'repository') {
-                    setState(state => ({
-                      ...state,
-                      type,
-                      handle: `${value.owner.login}/${value.name}`,
-                      repo: null,
-                    }));
-                  } else {
-                    setState(state => ({
-                      ...state,
-                      type,
-                      handle: `${value.owner.login}`,
-                      repo: `${value.owner.login}/${value.name}`,
-                    }));
-                  }
-                }}
-              />
-            </RepositoryEntryContainer>
-          );
-        }}
-      </StyledRadioList>
-    </StyledCard>
+          <FormattedMessage id="createcollective.opensource.continue" defaultMessage="Continue" />
+        </StyledButton>
+      </Flex>
+    </Fragment>
   );
 };
 
@@ -119,6 +142,7 @@ GithubRepositories.propTypes = {
   repositories: PropTypes.array.isRequired,
   /** @ignore from injectIntl */
   intl: PropTypes.object,
+  sendRepoInfo: PropTypes.func,
 };
 
 export default injectIntl(GithubRepositories);

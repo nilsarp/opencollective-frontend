@@ -1,17 +1,19 @@
 import React, { Fragment, Component } from 'react';
 import PropTypes from 'prop-types';
 import { Flex, Box } from '@rebass/grid';
+import { get } from 'lodash';
+import { defineMessages, injectIntl } from 'react-intl';
+
 import Page from '../Page';
 import { H1, P } from '../Text';
-import { addCreateCollectiveMutation } from '../../lib/graphql/mutations';
 import CreateCollectiveForm from './sections/CreateCollectiveForm';
 import CollectiveCategoryPicker from './sections/CollectiveCategoryPicker';
 import ConnectGithub from './sections/ConnectGithub';
 import ErrorPage from '../ErrorPage';
 import SignInOrJoinFree from '../SignInOrJoinFree';
-import { get } from 'lodash';
-import { defineMessages, injectIntl } from 'react-intl';
 import { withUser } from '../UserProvider';
+
+import { addCreateCollectiveMutation } from '../../lib/graphql/mutations';
 import { getErrorFromGraphqlException } from '../../lib/utils';
 import { Router } from '../../server/pages';
 

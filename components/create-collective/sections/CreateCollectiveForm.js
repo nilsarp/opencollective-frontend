@@ -2,16 +2,18 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Formik, Field, Form } from 'formik';
 import { Flex, Box } from '@rebass/grid';
+import { assign } from 'lodash';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+
 import { H1, P } from '../../Text';
 import Container from '../../Container';
 import Illustration from '../../home/HomeIllustration';
-import { assign, get } from 'lodash';
 import StyledCheckbox from '../../StyledCheckbox';
 import StyledInput from '../../StyledInput';
 import StyledInputField from '../../StyledInputField';
 import StyledInputGroup from '../../StyledInputGroup';
 import StyledButton from '../../StyledButton';
-import { defineMessages, injectIntl } from 'react-intl';
+
 import { defaultBackgroundImage } from '../../../lib/constants/collectives';
 import { Router } from '../../../server/pages';
 
@@ -56,17 +58,6 @@ class CreateCollectiveForm extends React.Component {
         id: 'createCollective.button.create',
         defaultMessage: 'Create Collective',
       },
-      'tos.label': {
-        id: 'createcollective.tos.label',
-        defaultMessage: 'I agree with the {toslink} of Open Collective',
-        values: {
-          toslink: (
-            <a href="/tos" target="_blank" rel="noopener noreferrer">
-              terms of service
-            </a>
-          ),
-        },
-      },
     });
   }
 
@@ -91,7 +82,7 @@ class CreateCollectiveForm extends React.Component {
   };
 
   render() {
-    const { host, intl } = this.props;
+    const { intl } = this.props;
 
     const initialValues = {
       name: null,
@@ -129,9 +120,9 @@ class CreateCollectiveForm extends React.Component {
     };
 
     return (
-      <div className="CreateCollectiveForm" maxWidth={'992px'}>
-        <Flex flexDirection="column" my={4}>
-          <Box textAlign="left" minHeight={['32px']}>
+      <Flex className="CreateCollectiveForm" flexDirection="column" m={[3, 4]}>
+        <Flex flexDirection="column" my={[2, 4]}>
+          <Box textAlign="left" minHeight={['32px']} marginLeft={['none', '224px']}>
             <StyledButton
               asLink
               fontSize="Paragraph"
@@ -144,7 +135,7 @@ class CreateCollectiveForm extends React.Component {
               ←&nbsp;{intl.formatMessage(this.messages.back)}
             </StyledButton>
           </Box>
-          <Box mb={3}>
+          <Box mb={[2, 3]}>
             <H1
               fontSize={['H5', 'H3']}
               lineHeight={['H5', 'H3']}
@@ -163,11 +154,10 @@ class CreateCollectiveForm extends React.Component {
         </Flex>
         <Flex alignItems="center" justifyContent="center">
           <Container
-            m={[1, 4]}
             mb={[1, 5]}
             minWidth={['300px', '576px']}
             maxWidth={['500px', '576px']}
-            border={['none', null, null, `1px solid #E6E8EB`]}
+            border={['none', null, null, '1px solid #E6E8EB']}
             borderRadius={['none', null, null, '8px']}
             px={[1, 4]}
           >
@@ -227,7 +217,19 @@ class CreateCollectiveForm extends React.Component {
                     <Box className="tos" mx={1} my={4}>
                       <StyledCheckbox
                         name="tos"
-                        label={intl.formatMessage(this.messages['tos.label'])}
+                        label={
+                          <FormattedMessage
+                            id="createcollective.tos.label"
+                            defaultMessage="I agree with the <toslink>terms of service</toslink> of Open Collective."
+                            values={{
+                              toslink: msg => (
+                                <a href="/tos" target="_blank" rel="noopener noreferrer">
+                                  {msg}
+                                </a>
+                              ),
+                            }}
+                          />
+                        }
                         required
                         checked={this.state.checked}
                         onChange={({ checked }) => {
@@ -239,7 +241,6 @@ class CreateCollectiveForm extends React.Component {
                     <Flex justifyContent={['center', 'left']} mb={4}>
                       <StyledButton
                         buttonSize="small"
-                        bg="linear-gradient(180deg, #1869F5 0%, #1659E1 100%)"
                         height="36px"
                         width="148px"
                         buttonStyle="primary"
@@ -264,7 +265,7 @@ class CreateCollectiveForm extends React.Component {
             </Flex>
           </Container>
         </Flex>
-      </div>
+      </Flex>
     );
   }
 }
